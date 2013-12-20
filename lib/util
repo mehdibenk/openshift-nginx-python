@@ -1,0 +1,45 @@
+#!/bin/bash
+# Utility functions for use in the cartridge scripts.
+
+function wait_for_stop {
+        pid=$1
+    for i in {1..60}
+    do
+        if `ps --pid $pid > /dev/null 2>&1`
+        then
+            echo "Waiting for stop to finish"
+            sleep .5
+        else
+            break
+        fi
+    done
+}
+
+function update-configuration {
+  case $1 in
+    3.3)
+      echo "$OPENSHIFT_PYTHON_DIR/bin:$OPENSHIFT_PYTHON_DIR/virtenv/venv/bin" > $OPENSHIFT_PYTHON_DIR/env/OPENSHIFT_PYTHON_PATH_ELEMENT
+      ;;
+    2.7)
+      echo "$OPENSHIFT_PYTHON_DIR/bin:$OPENSHIFT_PYTHON_DIR/virtenv/bin" > $OPENSHIFT_PYTHON_DIR/env/OPENSHIFT_PYTHON_PATH_ELEMENT
+      ;;
+    2.6)
+      echo "$OPENSHIFT_PYTHON_DIR/bin" > $OPENSHIFT_PYTHON_DIR/env/OPENSHIFT_PYTHON_PATH_ELEMENT
+      ;;
+  esac
+
+}
+
+function _run_template()
+{
+	for conf in $@; do
+		[ -e "$conf" ] || continue
+		/usr/bin/oo-erb "$conf" > "${conf%.erb}"
+	done
+}
+
+function build_nginx_config()
+{
+	echo Building nginx configuration
+	_run_template $OPENSHIFT_REPO_DIR/config/nginx.d/*.erb
+}

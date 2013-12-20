@@ -1,0 +1,18 @@
+---
+locked_files:
+- bin/
+- bin/*
+- etc/
+- etc/conf.d/
+- etc/conf.d/*
+- hooks/
+- hooks/*
+- metadata/
+- metadata/*
+- env/
+- env/OPENSHIFT_PYTHON_DIR
+- env/OPENSHIFT_PYTHON_LOG_DIR
+processed_templates:
+- 'env/**.erb'
+- versions/shared/etc/conf/nginx.conf.erb
+- versions/2.7/metadata/jenkins_shell_command.erb
