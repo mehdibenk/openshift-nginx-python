@@ -43,3 +43,48 @@ function build_nginx_config()
 	echo Building nginx configuration
 	_run_template $OPENSHIFT_REPO_DIR/config/nginx.d/*.erb
 }
+
+function start_nginx()
+{
+	build_nginx_config
+	if ! $pycart_dir/versions/shared/usr/sbin/nginx -p $pycart_dir/version/shared -c $NGINX_CFG_FILE -g "error_log $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log;" \
+		  >> $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log 2>&1; then
+		echo 1>&2
+		cat $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log 1>&2
+		return 1
+	fi
+}
+
+function stop_service_by_pid()
+{
+    if [ -f "$1" ]; then
+        pid=`cat "$1" 2>/dev/null`
+	else
+		pid=$1
+    fi
+    if [ -n "$pid" ]; then
+        kill $pid
+        wait_for_stop $pid
+        if [ -f "$1" ]; then
+            rm -f "$1"
+        fi
+    fi
+}
+
+function is_running()
+{
+    if [ -f "$1" ]; then
+        pid=`cat "$1" 2>/dev/null`
+	else
+		pid=$1
+    fi
+   if [ -n "$pid" ]; then
+      myid=$(id -u)
+      if `ps -opid,args --pid $pid 2>&1 | grep "app.py" &> /dev/null`; then
+         return 0
+      fi
+   fi
+
+   return 1
+}
+

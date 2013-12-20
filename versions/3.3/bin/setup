@@ -24,3 +24,6 @@ fi
 # Add the python cartridge environment variables.
 egg_cache_dir="${OPENSHIFT_PYTHON_DIR}/virtenv/.python-eggs"
 echo "$egg_cache_dir" > "$OPENSHIFT_PYTHON_DIR/env/PYTHON_EGG_CACHE"
+
+# Create additional directories required by nginx
+mkdir -p $TMP/nginx

@@ -5,35 +5,27 @@ cartridge_type="python-$OPENSHIFT_PYTHON_VERSION"
 
 #  Source in the utility functions.
 pycart_dir="${OPENSHIFT_PYTHON_DIR}"
+source "$pycart_dir/lib/util"
 source "$pycart_dir/versions/$OPENSHIFT_PYTHON_VERSION/lib/utils"
 
-
-function _is_running() {
-   if [ -f "$pycart_dir/run/appserver.pid" ]; then
-      zpid=$(cat "$pycart_dir/run/appserver.pid" 2> /dev/null)
-      myid=$(id -u)
-      if `ps -opid,args --pid $zpid 2>&1 | grep "app.py" &> /dev/null`; then
-         return 0
-      fi
-   fi
-
-   return 1
-
-}  #  End of function  _is_running.
-
+NGINX_CFG_FILE=$pycart_dir/versions/shared/etc/conf/nginx.conf
+NGINX_PID_FILE=$pycart_dir/run/nginx.pid
+PYTHON_PID_FILE=$pycart_dir/run/appserver.pid
 
 function _start_service() {
-   if _is_running; then
+   if is_running; then
       echo "$cartridge_type application is already running" 1>&2
       return 0
    fi
+
+   start_nginx
 
    pushd $OPENSHIFT_REPO_DIR > /dev/null
    source "$pycart_dir/bin/activate_virtenv"
 
    nohup python -u app.py > "$pycart_dir/logs/appserver.log" 2>&1 &
    pid=$!
-   echo "$pid" > "$pycart_dir/run/appserver.pid"
+   echo "$pid" > "$PYTHON_PID_FILE"
 
    sleep 5
 
@@ -44,28 +36,8 @@ function _start_service() {
 
 
 function _stop_service() {
-   if ! _is_running; then
-      echo "$cartridge_type application is already stopped!" 1>&2
-      return 0
-   fi
-
-   if [ -f "$pycart_dir/run/appserver.pid" ]; then
-      zpid=$(cat "$pycart_dir/run/appserver.pid" 2> /dev/null)
-   fi
-
-   if [ -n "$zpid" ]; then
-      /bin/kill $zpid
-      ret=$?
-      if [ $ret -eq 0 ]; then
-         TIMEOUT=10
-         while [ $TIMEOUT -gt 0 ] &&  _is_running ; do
-            /bin/kill -0 "$zpid" > /dev/null 2>&1  ||  break
-            sleep 1
-            let TIMEOUT=${TIMEOUT}-1
-         done
-      fi
-   fi
-
+   stop_service_by_pid $NGINX_PID_FILE
+   stop_service_by_pid $PYTHON_PID_FILE
 
 }  #  End of function  _stop_service.
 
@@ -88,11 +60,11 @@ function status() {
 }
 
 function build() {
-   $OPENSHIFT_PYTHON_DIR/versions/$OPENSHIFT_PYTHON_VERSION/bin/build
+   $pycart_dir/versions/$OPENSHIFT_PYTHON_VERSION/bin/build
 }
 
 function deploy() {
-   $OPENSHIFT_PYTHON_DIR/versions/$OPENSHIFT_PYTHON_VERSION/bin/deploy
+   $pycart_dir/versions/$OPENSHIFT_PYTHON_VERSION/bin/deploy
 }
 
 # Clean up any log files

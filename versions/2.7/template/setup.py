@@ -7,7 +7,8 @@ setup(name='YourAppName', version='1.0',
 
       #  Uncomment one or more lines below in the install_requires section
       #  for the specific client drivers/modules your application needs.
-      install_requires=['greenlet', 'gevent',
+      install_requires=['gevent',
+                        #  'CherryPy',
                         #  'MySQL-python',
                         #  'pymongo',
                         #  'psycopg2',

@@ -5,44 +5,20 @@ cartridge_type="python-$OPENSHIFT_PYTHON_VERSION"
 
 #  Source in the utility functions.
 pycart_dir="${OPENSHIFT_PYTHON_DIR}"
-source "$pycart_dir/versions/$OPENSHIFT_PYTHON_VERSION/lib/utils"
 source "$pycart_dir/lib/util"
+source "$pycart_dir/versions/$OPENSHIFT_PYTHON_VERSION/lib/utils"
 
 NGINX_CFG_FILE=$pycart_dir/versions/shared/etc/conf/nginx.conf
 NGINX_PID_FILE=$pycart_dir/run/nginx.pid
 PYTHON_PID_FILE=$pycart_dir/run/appserver.pid
 
-function _start_nginx() {
-    if ! $pycart_dir/versions/shared/usr/sbin/nginx -p $pycart_dir/version/shared -c $NGINX_CFG_FILE -g "error_log $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log;" \
-        >> $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log 2>&1; then
-        echo 1>&2
-        cat $OPENSHIFT_PYTHON_LOG_DIR/nginx_error.log 1>&2
-        return 1
-    fi
-}
-
-function _is_running() {
-   if [ -f "$PYTHON_PID_FILE" ]; then
-      zpid=$(cat "$PYTHON_PID_FILE" 2> /dev/null)
-      myid=$(id -u)
-      if `ps -opid,args --pid $zpid 2>&1 | grep "app.py" &> /dev/null`; then
-         return 0
-      fi
-   fi
-
-   return 1
-
-}  #  End of function  _is_running.
-
-
 function _start_service() {
-   if _is_running; then
+   if is_running; then
       echo "$cartridge_type application is already running" 1>&2
       return 0
    fi
 
-   build_nginx_config
-   _start_nginx
+   start_nginx
 
    pushd $OPENSHIFT_REPO_DIR > /dev/null
    source "$pycart_dir/bin/activate_virtenv"
@@ -59,22 +35,9 @@ function _start_service() {
 }  #  End of function  _start_service.
 
 
-function _stop_service_by_pidfile() {
-    if [ -f "$1" ]; then
-        pid=`cat "$1" 2>/dev/null`
-    fi
-    if [ -n "$pid" ]; then
-        kill $pid
-        wait_for_stop $pid
-        if [ -f "$1" ]; then
-            rm -f "$1"
-        fi
-    fi
-}
-
 function _stop_service() {
-   _stop_service_by_pidfile $NGINX_PID_FILE
-   _stop_service_by_pidfile $PYTHON_PID_FILE
+   stop_service_by_pid $NGINX_PID_FILE
+   stop_service_by_pid $PYTHON_PID_FILE
 
 }  #  End of function  _stop_service.
 

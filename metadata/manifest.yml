@@ -3,6 +3,7 @@ Cartridge-Short-Name: PYTHON
 Display-Name: Python 2.7
 Description: "Python is a general-purpose, high-level programming language whose design philosophy emphasizes code readability. Popular development frameworks include: Django, Bottle, Pylons, Zope and TurboGears."
 Version: '2.7'
+Versions: ['2.7', '3.3']
 License: "The Python License, version 2.7"
 License-Url: http://docs.python.org/3/license.html
 Vendor: python.org
@@ -83,3 +84,13 @@ Endpoints:
   - Private-IP-Name:   WSGI_IP
     Private-Port-Name: WSGI_PORT
     Private-Port:      9000
+Version-Overrides:
+  '3.3':
+     Display-Name: Python 3.3
+     License: "The Python License, version 3.3"
+     Provides:
+       - nginx-1.0
+       - "nginx"
+       - python-3.3
+       - "python"
+       - "python(version) = 3.3"
