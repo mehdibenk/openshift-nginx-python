@@ -8,6 +8,6 @@ case $1 in
         update-configuration $OPENSHIFT_PYTHON_VERSION
         ;;
     *)
-        exec $OPENSHIFT_PYTHON_DIR/versions/$OPENSHIFT_PYTHON_VERSION/bin/control "$@"
+        exec $OPENSHIFT_PYTHON_DIR/versions/2.7/bin/control "$@"
         ;;
 esac
