@@ -11,7 +11,7 @@ cp -r $OPENSHIFT_PYTHON_DIR/versions/$version/metadata/* $OPENSHIFT_PYTHON_DIR/m
 
 # Download the repo bits
 cart_git_url="git://github.com/openshift/openshift-community-cartridge-python-$version.git"
-download_dir=$OPENSHIFT_PYTHON_DIR/upstream-repo
+download_dir=$OPENSHIFT_APP_NAME
 
 if [ ! -d $download_dir ]; then
   mkdir -p $download_dir
